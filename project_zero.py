@@ -3,18 +3,25 @@
 
 import requests
 import tkinter as tk
+from tkinter import Scrollbar
 
+saved_web_url=None
 def url_del(url):
+    global saved_web_url
     if url.find("http") == -1:
         if start_interface_1.var_http.get() != '':
             url=start_interface_1.var_http.get()+url
         else:
             url=None
+    saved_web_url=url
     return url
 
+saved_web_object=None
 def get_web_object(input_url):
+    global saved_web_object
     try:
         #print(bool(start_interface_1.var_verify.get()))
+        print(saved_web_object)
         resp=requests.get(input_url,verify=bool(start_interface_1.var_verify.get()))
         status_code = resp.status_code
         if status_code != 200:
@@ -26,8 +33,34 @@ def get_web_object(input_url):
         print("無法訪問，",repr(e))
         start_interface_1.var_status.set("無法訪問，"+str(repr(e)))
         web_object=None
+    saved_web_object=web_object
+#print(saved_web_object)
     return web_object
 
+class code_interface(tk.Frame):
+    def __init__(self,x_size,y_size,master=None):
+        tk.Frame.__init__(self,master)
+        self.pack()
+
+        #print(saved_web_object)
+        
+        
+        self.var_web_object = tk.StringVar()
+        self.var_web_object.set(saved_web_object)
+        self.per_word_size_2 = 700/77
+        self.web_object_x=78
+        self.web_object_y=27
+        self.sb = Scrollbar(master)
+        self.sb.pack(side="right",fill="y")
+        #self.web_object = tk.Label(master, wraplength = self.per_word_size_2*(self.web_object_x),textvariable=self.var_web_object, bg='green', width=self.web_object_x, height=self.web_object_y)
+        self.web_object = tk.Text(master, bg='green', width=self.web_object_x, height=self.web_object_y,font=('Arial', 25),yscrollcommand=self.sb.set)
+        self.web_object.insert("end",self.var_web_object.get())
+        #self.web_object = scrolledtext.ScrolledText(master, wrap=tk.WORD, bg='green', width=self.web_object_x, height=self.web_object_y)
+        self.web_object.pack()
+        self.sb.config(command=self.web_object.yview)
+        self.web_object.place(x=0, y=30, anchor='nw')
+
+selected_mode = 0
 class start_interface(tk.Frame):
     def __init__(self,x_size,y_size,master=None):
         tk.Frame.__init__(self,master)
@@ -97,6 +130,8 @@ class start_interface(tk.Frame):
         self.master.destroy()
 
     def browse_mode(self):
+        global selected_mode
+        selected_mode=1
         input_url = url_del(self.url_entry.get())
         if input_url == None:
             print("請確認輸入！")
@@ -107,6 +142,8 @@ class start_interface(tk.Frame):
             self.quit()
 
     def code_mode(self):
+        global selected_mode
+        selected_mode=2
         input_url = url_del(self.url_entry.get())
         if input_url == None:
             print("請確認輸入！")
@@ -117,6 +154,8 @@ class start_interface(tk.Frame):
             self.quit()
 
     def password_mode(self):
+        global selected_mode
+        selected_mode=3
         input_url = url_del(self.url_entry.get())
         if input_url == None:
             print("請確認輸入！")
@@ -133,3 +172,19 @@ start_window.title('Start Interface')
 start_window.geometry(str(x_size)+'x'+str(y_size))
 start_interface_1 = start_interface(x_size,y_size,start_window)
 start_window.mainloop()
+
+#print(saved_web_object)
+if selected_mode==0:
+    exit()
+elif selected_mode == 1:
+    pass
+elif selected_mode == 2:
+    code_window = tk.Tk()
+    x_size=1280
+    y_size=800
+    code_window.title('Code Interface')
+    code_window.geometry(str(x_size)+'x'+str(y_size))
+    code_interface_1 = code_interface(x_size,y_size,code_window)
+    code_window.mainloop()
+elif selected_mode == 3:
+    pass
