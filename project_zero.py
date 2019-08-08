@@ -19,11 +19,12 @@ def get_web_object(input_url):
         status_code = resp.status_code
         if status_code != 200:
             raise Exception("反饋異常"+str(status_code))
+            start_interface_1.var_status.set("反饋異常"+str(status_code))
         print(input_url,status_code)
         web_object = resp.text
-        
     except Exception as e:
         print("無法訪問，",repr(e))
+        start_interface_1.var_status.set("無法訪問，"+str(repr(e)))
         web_object=None
     return web_object
 
@@ -83,11 +84,14 @@ class start_interface(tk.Frame):
         self.button_password.pack()
         self.button_password.place(x=((x_size/4)*3)-(per_word_size*(self.button_password_x/2)), y=200, anchor='nw')
     
-        self.status_block_x=200
-        self.status_block_y=6
-        self.title1 = tk.Label(master, text='等待輸入', bg='green', font=('Arial', 15), width=self.status_block_x, height=self.status_block_y)
+        self.var_status = tk.StringVar()
+        self.var_status.set("等待輸入")
+        self.per_word_size_2 = 700/77
+        self.status_block_x=60
+        self.status_block_y=7
+        self.title1 = tk.Label(master, wraplength = self.per_word_size_2*(self.status_block_x),textvariable=self.var_status, bg='green', width=self.status_block_x, height=self.status_block_y)
         self.title1.pack()
-        self.title1.place(x=(x_size/2)-(per_word_size*(self.status_block_x/2)), y=250, anchor='nw')
+        self.title1.place(x=(x_size/2)-(self.per_word_size_2*(self.status_block_x/2)), y=250, anchor='nw')
 
     def quit(self):
         self.master.destroy()
@@ -109,6 +113,8 @@ class start_interface(tk.Frame):
             return 0
         web_object = get_web_object(input_url)
         #print(web_object)
+        if web_object != None:
+            self.quit()
 
     def password_mode(self):
         input_url = url_del(self.url_entry.get())
@@ -117,7 +123,8 @@ class start_interface(tk.Frame):
             return 0
         web_object = get_web_object(input_url)
         #print(web_object)
-
+        if web_object != None:
+            self.quit()
 
 start_window = tk.Tk()
 x_size=700
