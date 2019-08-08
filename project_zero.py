@@ -49,16 +49,89 @@ class code_interface(tk.Frame):
         self.var_web_object.set(saved_web_object)
         self.per_word_size_2 = 700/77
         self.web_object_x=78
-        self.web_object_y=27
+        self.web_object_y=24
         self.sb = Scrollbar(master)
         self.sb.pack(side="right",fill="y")
+        self.per_word_size=250/19
+        self.per_entry_size=250/30
+        
         #self.web_object = tk.Label(master, wraplength = self.per_word_size_2*(self.web_object_x),textvariable=self.var_web_object, bg='green', width=self.web_object_x, height=self.web_object_y)
-        self.web_object = tk.Text(master, bg='green', width=self.web_object_x, height=self.web_object_y,font=('Arial', 25),yscrollcommand=self.sb.set)
+        self.web_object = tk.Text(master, bg='#66FF66', width=self.web_object_x, height=self.web_object_y,font=('Arial', 25),yscrollcommand=self.sb.set)
         self.web_object.insert("end",self.var_web_object.get())
         #self.web_object = scrolledtext.ScrolledText(master, wrap=tk.WORD, bg='green', width=self.web_object_x, height=self.web_object_y)
         self.web_object.pack()
         self.sb.config(command=self.web_object.yview)
         self.web_object.place(x=0, y=30, anchor='nw')
+        
+        self.var_show = tk.StringVar()
+        self.var_show.set("等待操作")
+        self.web_resp_x=78
+        self.web_resp_y=3
+        self.web_resp = tk.Text(master, bg='#33FFFF', width=self.web_resp_x, height=self.web_resp_y,font=('Arial', 25),yscrollcommand=self.sb.set)
+        self.web_resp.insert("end",self.var_show.get())
+        #self.web_object = scrolledtext.ScrolledText(master, wrap=tk.WORD, bg='green', width=self.web_object_x, height=self.web_object_y)
+        self.web_resp.pack()
+        self.sb.config(command=self.web_object.yview)
+        self.web_resp.place(x=0, y=710, anchor='nw')
+        
+        self.title2_x=20
+        self.title2_y=0
+        self.title2 = tk.Label(master, text=saved_web_url, font=('Arial', 21), width=self.title2_x, height=self.title2_y)
+        self.title2.pack()
+        self.title2.place(x=10, y=0, anchor='nw')
+
+        self.button_browse_x=7
+        self.button_browse_y=1
+        self.button_browse = tk.Button(master, text='瀏覽模式',font=('Arial', 24),command=self.browse_mode,highlightbackground='#3E4149',width=self.button_browse_x,height=self.button_browse_y)
+        self.button_browse.pack()
+        self.button_browse.place(x=1120, y=30, anchor='nw')
+        
+        self.button_code_x=9
+        self.button_code_y=1
+        self.button_code = tk.Button(master, text='原始碼模式',font=('Arial', 24),command=self.code_mode,highlightbackground='#3E4149',width=self.button_code_x,height=self.button_code_y)
+        self.button_code.pack()
+        self.button_code.place(x=1110, y=73, anchor='nw')
+        
+        self.button_password_x=8
+        self.button_password_y=1
+        self.button_password = tk.Button(master, text='登入模式',font=('Arial', 24),command=self.password_mode,highlightbackground='#3E4149',width=self.button_password_x,height=self.button_password_y)
+        self.button_password.pack()
+        self.button_password.place(x=1118, y=116, anchor='nw')
+
+        self.trace_entry_1_x=16
+        self.trace_entry_1 = tk.Entry(master,show=None, font=('Arial', 14),width=self.trace_entry_1_x)  # 顯示成明文形式
+        self.trace_entry_1.pack()
+        self.trace_entry_1.place(x=1118, y=170, anchor='nw')
+
+        self.trace_entry_2_x=16
+        self.trace_entry_2 = tk.Entry(master,show=None, font=('Arial', 14),width=self.trace_entry_2_x)  # 顯示成明文形式
+        self.trace_entry_2.pack()
+        self.trace_entry_2.place(x=1118, y=195, anchor='nw')
+
+        self.trace_entry_3_x=16
+        self.trace_entry_3 = tk.Entry(master,show=None, font=('Arial', 14),width=self.trace_entry_3_x)  # 顯示成明文形式
+        self.trace_entry_3.pack()
+        self.trace_entry_3.place(x=1118, y=220, anchor='nw')
+
+        self.button_trace_x=8
+        self.button_trace_y=1
+        self.button_trace = tk.Button(master, text='追蹤目標',font=('Arial', 24),command=self.password_mode,highlightbackground='#3E4149',width=self.button_trace_x,height=self.button_trace_y)
+        self.button_trace.pack()
+        self.button_trace.place(x=1118, y=250, anchor='nw')
+            
+    def browse_mode(self):
+        pass
+    def code_mode(self):
+        pass
+    def password_mode(self):
+        pass
+    def trace_func(self):
+        str1=self.trace_entry_1.get()
+        str2=self.trace_entry_2.get()
+        str3=self.trace_entry_3.get()
+        i1=saved_web_object.index(str1)
+        i2=saved_web_object.index(str1)
+        i3=saved_web_object.index(str1)
 
 selected_mode = 0
 class start_interface(tk.Frame):
@@ -78,6 +151,7 @@ class start_interface(tk.Frame):
         self.url_entry_x=40
         self.url_entry = tk.Entry(master,show=None, font=('Arial', 14),width=self.url_entry_x)  # 顯示成明文形式
         self.url_entry.pack()
+        self.url_entry.insert("end","www.google.com")
         self.url_entry.place(x=(x_size/2)-(per_entry_size*(self.url_entry_x/2))-40, y=110, anchor='nw')
 
         self.button_html_x=8
