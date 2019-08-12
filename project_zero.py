@@ -26,7 +26,7 @@ def get_web_object(input_url):
     global del_saved_object
     try:
         #print(bool(start_interface_1.var_verify.get()))
-        print(saved_web_object)
+        #print(saved_web_object)
         resp=requests.get(input_url,verify=bool(start_interface_1.var_verify.get()))
         status_code = resp.status_code
         if status_code != 200:
@@ -56,6 +56,9 @@ class code_interface(tk.Frame):
         self.final_tag=None
         self.final_attr=None
         self.soup=None
+        self.get_list=None
+        self.final_dis=None
+        self.final_start=None
         self.bs4_web_object = self.html_parse()
         
         self.var_web_object = tk.StringVar()
@@ -87,9 +90,9 @@ class code_interface(tk.Frame):
         self.sb.config(command=self.web_object.yview)
         self.web_resp.place(x=0, y=710, anchor='nw')
         
-        self.title2_x=20
+        #self.title2_x=50
         self.title2_y=0
-        self.title2 = tk.Label(master, text=saved_web_url, font=('Arial', 21), width=self.title2_x, height=self.title2_y)
+        self.title2 = tk.Label(master, text=saved_web_url, font=('Arial', 21), height=self.title2_y)#, width=self.title2_x)
         self.title2.pack()
         self.title2.place(x=10, y=0, anchor='nw')
 
@@ -126,18 +129,49 @@ class code_interface(tk.Frame):
         self.trace_entry_3.pack()
         self.trace_entry_3.place(x=1118, y=220, anchor='nw')
 
+        self.button_search_mode_x=8
+        self.button_search_mode_y=1
+        self.var_search_mode = tk.StringVar()
+        self.var_search_mode.set("0")
+        self.button_search_mode_label = tk.Radiobutton(master, text='標籤模式', variable=self.var_search_mode,value="0",bg="#666666",command=self.label_search_onclick)
+        self.button_search_mode_label.pack()
+        self.button_search_mode_index = tk.Radiobutton(master, text='位置模式', variable=self.var_search_mode,value="1",bg="#666666",command=self.index_search_onclick)
+        self.button_search_mode_index.pack()
+        self.button_search_mode_pos = tk.Radiobutton(master, text='夾擠模式', variable=self.var_search_mode,value="2",bg="#666666",command=self.pos_search_onclick)
+        self.button_search_mode_pos.pack()
+        self.button_search_mode_label.place(x=1145, y=250, anchor='nw')
+        self.button_search_mode_index.place(x=1145, y=275, anchor='nw')
+        self.button_search_mode_pos.place(x=1145, y=300, anchor='nw')
+        
         self.button_trace_x=8
         self.button_trace_y=1
         self.button_trace = tk.Button(master, text='追蹤目標',font=('Arial', 24),command=self.trace_func,highlightbackground='#3E4149',width=self.button_trace_x,height=self.button_trace_y)
         self.button_trace.pack()
-        self.button_trace.place(x=1118, y=250, anchor='nw')
+        self.button_trace.place(x=1118, y=330, anchor='nw')
     
         self.button_get_out_x=8
         self.button_get_out_y=1
         self.button_get_out = tk.Button(master, text='開始擷取',font=('Arial', 24),command=self.get_out_func,highlightbackground='#3E4149',width=self.button_get_out_x,height=self.button_get_out_y)
         self.button_get_out.pack()
-        self.button_get_out.place(x=1118, y=750, anchor='nw')
-            
+        self.button_get_out.place(x=1118, y=710, anchor='nw')
+    
+        self.button_save_search_x=8
+        self.button_save_search_y=1
+        self.button_save_search = tk.Button(master, text='保存結果',font=('Arial', 24),command=self.save_search_func,highlightbackground='#3E4149',width=self.button_save_search_x,height=self.button_save_search_y)
+        self.button_save_search.pack()
+        self.button_save_search.place(x=1118, y=755, anchor='nw')
+    
+    def change_show_mes(self,text):
+        self.var_show.set(text)
+        self.web_resp.delete('1.0', "end")
+        self.web_resp.insert("end",self.var_show.get())
+    
+    def label_search_onclick(self):
+        self.change_show_mes("標籤模式尋找相近的標籤定位，若沒有明確的標籤會導致定位失敗")
+    def index_search_onclick(self):
+        self.change_show_mes("位置模式使用索引值標定位置，要求輸入字數相同，相鄰索引間沒有變動文字，且局限於部分範圍")
+    def pos_search_onclick(self):
+        self.change_show_mes("夾擠模式分析目標物是否被特定文字夾取，該文字需有特定性，即可取出目標")
     def browse_mode(self):
         pass
     def code_mode(self):
@@ -150,171 +184,242 @@ class code_interface(tk.Frame):
         #for item in get_tags:
         #   print(item.text)
         return self.soup.prettify()
-    def get_out_func(self):
-        if self.final_tag!=None and self.final_attr!=None:
-            try:
-                get_tags = self.soup.find_all(self.final_tag)
-                if len(get_tags)==0:
-                    raise ErrorTags()
-                get_list=[]
-                mes=""
-                for item in get_tags:
-                    get_list.append(item[self.final_attr])
-                    mes+=(item[self.final_attr]+"\n")
-            except KeyError:
-                mes="attr參數錯誤，請嘗試其他搜尋工具"
-            except ErrorTags:
-                mes="tag參數錯誤，請嘗試其他搜尋工具"
+    def save_search_func(self):
+        if self.get_list!=None:
+            mes="保存成功！"
         else:
-            mes="請先完成搜尋，再進行擷取！！！"
-        self.var_show.set(mes)
-        self.web_resp.delete('1.0', "end")
-        self.web_resp.insert("end",self.var_show.get())
+            mes="請先完成擷取！！！"
+        self.change_show_mes(mes)
+    def get_out_func(self):
+        if self.var_search_mode.get() == "0":
+            #print("in")
+            if self.final_tag!=None and self.final_attr!=None:
+                try:
+                    get_tags = self.soup.find_all(self.final_tag)
+                    if len(get_tags)==0:
+                        raise ErrorTags()
+                    self.get_list=[]
+                    mes=""
+                    if self.final_attr == "html_text":
+                        for item in get_tags:
+                            self.get_list.append(item.text)
+                            mes+=(item.text+"\n")
+                    else:
+                        for item in get_tags:
+                            self.get_list.append(item[self.final_attr])
+                            mes+=(item[self.final_attr]+"\n")
+                except KeyError:
+                    mes="attr參數錯誤，請嘗試其他搜尋工具"
+                except ErrorTags:
+                    mes="tag參數錯誤，請嘗試其他搜尋工具"
+            else:
+                mes="請先完成搜尋，再進行擷取！！！"
+            self.change_show_mes(mes)
+        elif self.var_search_mode.get() == "1":
+            pass
+        else:
+            pass
     def trace_func(self):
         str1=self.trace_entry_1.get()
         str2=self.trace_entry_2.get()
         str3=self.trace_entry_3.get()
         if str1=="" or str2=="" or str3=="":
             mes="請確認輸入！！！"
-            self.var_show.set(mes)
-            self.web_resp.delete('1.0', "end")
-            self.web_resp.insert("end",self.var_show.get())
+            self.change_show_mes(mes)
             return 0
-        i1_list=[-1]
-        i1_tags=[]
-        i1_attr=[]
-        i2_list=[-1]
-        i2_attr=[]
-        i2_tags=[]
-        i3_list=[-1]
-        i3_attr=[]
-        i3_tags=[]
-        while True:
-            i1=self.bs4_web_object.find(str1,i1_list[-1]+1)
-            #print(i1)
-            if i1==-1:
-                break
-            else:
-                i1_list.append(i1)
-                catch = -1
-                for j in range(i1,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == "<":
-                            i1_tags.append(self.bs4_web_object[j+1:catch])
-                            #print("---",self.bs4_web_object[j+1:catch])
-                            break
+        #print(self.var_search_mode.get())
+        if self.var_search_mode.get() == "0":
+            i1_list=[-1]
+            i1_tags=[]
+            i1_attr=[]
+            i2_list=[-1]
+            i2_attr=[]
+            i2_tags=[]
+            i3_list=[-1]
+            i3_attr=[]
+            i3_tags=[]
+            while True:
+                i1=self.bs4_web_object.find(str1,i1_list[-1]+1)
+                #print(i1)
+                if i1==-1:
+                    break
+                else:
+                    i1_list.append(i1)
+                    catch = -1
+                    for j in range(i1,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == "<":
+                                i1_tags.append(self.bs4_web_object[j+1:catch])
+                                #print("---",self.bs4_web_object[j+1:catch])
+                                break
+                            elif self.bs4_web_object[j] == " ":
+                                catch = j
                         elif self.bs4_web_object[j] == " ":
                             catch = j
-                    elif self.bs4_web_object[j] == " ":
-                        catch = j
-                catch = -1
-                for j in range(i1,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == " ":
-                            i1_attr.append(self.bs4_web_object[j+1:catch])
-                            break
-                    elif self.bs4_web_object[j] == "=":
-                        catch = j
-                    elif self.bs4_web_object[j] == ">":
-                        index = i1+len(str1)+1
-                        while self.bs4_web_object[index] == " ":
-                            index+=1
-                        #print(self.bs4_web_object[index])
-                        if self.bs4_web_object[index] == "<":
-                            i1_attr.append("html_text")
-                            break
-        while True:
-            i2=self.bs4_web_object.find(str2,i2_list[-1]+1)
-            #print(i2)
-            if i2==-1:
-                break
-            else:
-                i2_list.append(i2)
-                catch = -1
-                for j in range(i2,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == "<":
-                            i2_tags.append(self.bs4_web_object[j+1:catch])
-                            break
+                    catch = -1
+                    for j in range(i1,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == " ":
+                                i1_attr.append(self.bs4_web_object[j+1:catch])
+                                break
+                        elif self.bs4_web_object[j] == "=":
+                            catch = j
+                        elif self.bs4_web_object[j] == ">":
+                            index = i1+len(str1)+1
+                            while self.bs4_web_object[index] == " ":
+                                index+=1
+                            #print(self.bs4_web_object[index])
+                            if self.bs4_web_object[index] == "<":
+                                i1_attr.append("html_text")
+                                break
+            while True:
+                i2=self.bs4_web_object.find(str2,i2_list[-1]+1)
+                #print(i2)
+                if i2==-1:
+                    break
+                else:
+                    i2_list.append(i2)
+                    catch = -1
+                    for j in range(i2,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == "<":
+                                i2_tags.append(self.bs4_web_object[j+1:catch])
+                                break
+                            elif self.bs4_web_object[j] == " ":
+                                catch = j
                         elif self.bs4_web_object[j] == " ":
                             catch = j
-                    elif self.bs4_web_object[j] == " ":
-                        catch = j
-                catch = -1
-                for j in range(i2,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == " ":
-                            i2_attr.append(self.bs4_web_object[j+1:catch])
-                            break
-                    elif self.bs4_web_object[j] == "=":
-                        catch = j
-                    elif self.bs4_web_object[j] == ">":
-                        index = i2+len(str2)+1
-                        while self.bs4_web_object[index] == " ":
-                            index+=1
-                        print(self.bs4_web_object[index])
-                        if self.bs4_web_object[index] == "<":
-                            i2_attr.append("html_text")
-                            break
-        while True:
-            i3=self.bs4_web_object.find(str3,i3_list[-1]+1)
-            #print(i3)
-            if i3==-1:
-                break
-            else:
-                i3_list.append(i3)
-                catch = -1
-                for j in range(i3,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == "<":
-                            i3_tags.append(self.bs4_web_object[j+1:catch])
-                            break
+                    catch = -1
+                    for j in range(i2,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == " ":
+                                i2_attr.append(self.bs4_web_object[j+1:catch])
+                                break
+                        elif self.bs4_web_object[j] == "=":
+                            catch = j
+                        elif self.bs4_web_object[j] == ">":
+                            index = i2+len(str2)+1
+                            while self.bs4_web_object[index] == " ":
+                                index+=1
+                            #print(self.bs4_web_object[index])
+                            if self.bs4_web_object[index] == "<":
+                                i2_attr.append("html_text")
+                                break
+            while True:
+                i3=self.bs4_web_object.find(str3,i3_list[-1]+1)
+                #print(i3)
+                if i3==-1:
+                    break
+                else:
+                    i3_list.append(i3)
+                    catch = -1
+                    for j in range(i3,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == "<":
+                                i3_tags.append(self.bs4_web_object[j+1:catch])
+                                break
+                            elif self.bs4_web_object[j] == " ":
+                                catch = j
                         elif self.bs4_web_object[j] == " ":
                             catch = j
-                    elif self.bs4_web_object[j] == " ":
-                        catch = j
-                catch = -1
-                for j in range(i3,0,-1):
-                    if catch != -1:
-                        if self.bs4_web_object[j] == " ":
-                            i3_attr.append(self.bs4_web_object[j+1:catch])
-                            break
-                    elif self.bs4_web_object[j] == "=":
-                        catch = j
-                    elif self.bs4_web_object[j] == ">":
-                        index = i3+len(str3)+1
-                        while self.bs4_web_object[index] == " ":
-                            index+=1
-                        print(self.bs4_web_object[index])
-                        if self.bs4_web_object[index] == "<":
-                            i3_attr.append("html_text")
-                            break
-    
-        try:
-            for tag1 in i1_tags:
-                for tag2 in i2_tags:
-                    for tag3 in i3_tags:
-                        if tag1==tag2 and tag2==tag3:
-                            self.final_tag=tag1
-                            raise getoutofloop()
-        except getoutofloop:
-            pass
-        try:
-            for attr1 in i1_attr:
-                for attr2 in i2_attr:
-                    for attr3 in i3_attr:
-                        if attr1==attr2 and attr2==attr3:
-                            self.final_attr=attr1
-                            raise getoutofloop()
-        except getoutofloop:
-            pass
-        if self.final_tag!=None and self.final_attr!=None:
-            mes="驗證完成，可以截取！"+"\n"+"1.tag = "+str(i1_tags)+" 1.attr = "+str(i1_attr)+"\n"+"2.tag = "+str(i2_tags)+" 2.attr = "+str(i2_attr)+"\n"+"3.tag = "+str(i3_tags)+" 3.attr = "+str(i3_attr)
+                    catch = -1
+                    for j in range(i3,0,-1):
+                        if catch != -1:
+                            if self.bs4_web_object[j] == " ":
+                                i3_attr.append(self.bs4_web_object[j+1:catch])
+                                break
+                        elif self.bs4_web_object[j] == "=":
+                            catch = j
+                        elif self.bs4_web_object[j] == ">":
+                            index = i3+len(str3)+1
+                            while self.bs4_web_object[index] == " ":
+                                index+=1
+                            #print(self.bs4_web_object[index])
+                            if self.bs4_web_object[index] == "<":
+                                i3_attr.append("html_text")
+                                break
+            i1_list.remove(-1)
+            i2_list.remove(-1)
+            i3_list.remove(-1)
+            try:
+                for tag1 in i1_tags:
+                    for tag2 in i2_tags:
+                        for tag3 in i3_tags:
+                            if tag1==tag2 and tag2==tag3:
+                                self.final_tag=tag1
+                                raise getoutofloop()
+            except getoutofloop:
+                pass
+            try:
+                for attr1 in i1_attr:
+                    for attr2 in i2_attr:
+                        for attr3 in i3_attr:
+                            if attr1==attr2 and attr2==attr3:
+                                self.final_attr=attr1
+                                raise getoutofloop()
+            except getoutofloop:
+                pass
+            if self.final_tag!=None and self.final_attr!=None:
+                mes="驗證完成，可以截取！"+"\n"+"1.tag = "+str(i1_tags)+" 1.attr = "+str(i1_attr)+"\n"+"2.tag = "+str(i2_tags)+" 2.attr = "+str(i2_attr)+"\n"+"3.tag = "+str(i3_tags)+" 3.attr = "+str(i3_attr)
+            else:
+                mes="驗證失敗，無法擷取，請確認輸入資料是否規律！！！"+"\n"+"1.tag = "+str(i1_tags)+" 1.attr = "+str(i1_attr)+"\n"+"2.tag = "+str(i2_tags)+" 2.attr = "+str(i2_attr)+"\n"+"3.tag = "+str(i3_tags)+" 3.attr = "+str(i3_attr)
+            self.change_show_mes(mes)
+        elif self.var_search_mode.get() == "1":
+            if len(str1)!=len(str2) or len(str2)!=len(str3):
+                self.change_show_mes("輸入長度不相符，無法使用位置模式！！！")
+                return 0
+            else:
+                if str1==str2 and str2==str3:
+                    self.change_show_mes("輸入內容相同，無法使用位置模式！！！")
+            #print("in2")
+            i1_list=[-1]
+            i2_list=[-1]
+            i3_list=[-1]
+            while True:
+                i1=self.bs4_web_object.find(str1,i1_list[-1]+1)
+                #print(i1)
+                if i1==-1:
+                    break
+                else:
+                    i1_list.append(i1)
+            while True:
+                i2=self.bs4_web_object.find(str2,i2_list[-1]+1)
+                #print(i1)
+                if i2==-1:
+                    break
+                else:
+                    i2_list.append(i2)
+            while True:
+                i3=self.bs4_web_object.find(str3,i3_list[-1]+1)
+                #print(i1)
+                if i3==-1:
+                    break
+                else:
+                    i3_list.append(i3)
+            #print(i1_list)
+            #print(i2_list)
+            #print(i3_list)
+
+            i1_list.remove(-1)
+            i2_list.remove(-1)
+            i3_list.remove(-1)
+            try:
+                for index1 in i1_list:
+                    for index2 in i2_list:
+                        for index3 in i3_list:
+                            if (index3-index2) == (index2-index1):
+                                self.final_dis=index2-index1
+                                self.final_start=index1
+            except getoutofloop:
+                pass
+
+            if self.final_dis!=None and self.final_start!=None:
+                mes="驗證完成，可以截取！"+"\n"+"間格差:"+str(self.final_dis)+"\n"+"起始位置："+str(self.final_start)
+            else:
+                mes="驗證失敗，無法擷取，請確認輸入資料位置差是否相同！！！"+"\n"+"1."+str(i1_list)+"\n"+"2."+str(i2_list)+"\n"+"3."+str(i3_list)
+            self.change_show_mes(mes)
         else:
-            mes="驗證失敗，無法擷取，請確認輸入資料是否規律！！！"+"\n"+"1.tag = "+str(i1_tags)+" 1.attr = "+str(i1_attr)+"\n"+"2.tag = "+str(i2_tags)+" 2.attr = "+str(i2_attr)+"\n"+"3.tag = "+str(i3_tags)+" 3.attr = "+str(i3_attr)
-        self.var_show.set(mes)
-        self.web_resp.delete('1.0', "end")
-        self.web_resp.insert("end",self.var_show.get())
+            pass
 
 selected_mode = 0
 class start_interface(tk.Frame):
